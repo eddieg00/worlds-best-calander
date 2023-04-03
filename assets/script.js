@@ -21,21 +21,21 @@ var task = $('.description');
 var currentDay = moment().format('dddd, MMMM Do');
 currentDayEl.text(currentDay);
 
-function auditTimeBlock(timeBlockEventSpace) {
-    var currentTimeBlockHour = moment($(timeBlockHour).text().trim(), 'hA').hour();
+function auditTimeBlock($timeBlock) {
+    var timeBlockHour = $timeBlock.find('.hour');
+    var currentTimeBlockHour = moment(timeBlockHour.text().trim(), 'hA').hour();
 
-    $(timeBlockEventSpace).removeClass('past present future');
+    $timeBlock.removeClass('past present future');
 
     if (currentTimeBlockHour > currentHour) {
-        $(timeBlockEventSpace).addClass('future');
-    }
-    else if (currentTimeBlockHour === currentHour) {
-        $(timeBlockEventSpace).addClass('present');
-    }
-    else {
-        $(timeBlockEventSpace).addClass('past');
+        $timeBlock.addClass('future');
+    } else if (currentTimeBlockHour === currentHour) {
+        $timeBlock.addClass('present');
+    } else {
+        $timeBlock.addClass('past');
     }
 }
+
 
 function loadTask() {
 
@@ -49,65 +49,57 @@ function loadTask() {
     }
 }
 
-//function to save task
-function saveTask(hour, task) {
-    localStorage.setItem(hour, task);
-}
 
-for (var i = 0; i < workDayHours.length; i++) {
+// Define a function to create a time block row for a given hour
+function createTimeBlockRow(hour) {
+    // Create the necessary elements
     var timeBlockRow = $('<div>')
-        .addClass('row time-block')
-        .attr({
-            id: 'row-' + (i + 9)
-        })
-
+      .addClass('row time-block')
+      .attr('id', 'row-' + hour);
+  
     var timeBlockHour = $('<div>')
-        .addClass('col-1 hour')
-        .text(workDayHours[i])
-        .attr({
-            id: i + 9
-        })
-
+      .addClass('col-1 hour')
+      .text(hour);
+  
     var timeBlockEventSpace = $('<div>')
-        .addClass('col-10')
-        .attr({
-            id: 'time-block-' + (i + 9)
-        })
-
+      .addClass('col-10')
+      .attr('id', 'time-block-' + hour);
+  
     var userInput = $('<p>')
-        .addClass('description')
-        .text(' ')
-        .attr({
-            id: 'Hour-' + (i + 9)
-        });
-
+      .addClass('description')
+      .text(' ')
+      .attr('id', 'Hour-' + hour);
+  
     auditTimeBlock(timeBlockEventSpace);
-
+  
     var saveBtn = $('<button>')
-        .addClass('col-1 saveBtn')
-        .attr({
-            id: 'save-button-' + (i + 9),
-            type: 'button',
-        })
-        .on('click', function () {
-            var hour = $(this).siblings().first().text();
-            var task = $(this).siblings().last().text();
-
-            saveTask(hour, task)
-
-        })
-
-    var saveIcon = $('<i>')
-        .addClass('fas fa-save');
-
+      .addClass('col-1 saveBtn')
+      .attr({
+        id: 'save-button-' + hour,
+        type: 'button'
+      })
+      .on('click', function () {
+        var hour = $(this).siblings('.hour').text();
+        var task = $(this).siblings('.description').text().trim();
+        saveTask(hour, task);
+      });
+  
+    var saveIcon = $('<i>').addClass('fas fa-save');
+  
+    // Append the elements to the row
+    timeBlockRow.append(timeBlockHour, timeBlockEventSpace, saveBtn);
+    timeBlockEventSpace.append(userInput);
+    saveBtn.append(saveIcon);
+  
+    return timeBlockRow;
+  }
+  
+  // Loop through the work day hours and create a time block row for each hour
+  for (var i = 9; i <= 17; i++) {
+    var timeBlockRow = createTimeBlockRow(i);
     $(containerEl).append(timeBlockRow);
-    $(timeBlockRow).append(timeBlockHour);
-    $(timeBlockRow).append(timeBlockEventSpace);
-    $(timeBlockEventSpace).append(userInput);
-    $(timeBlockRow).append(saveBtn);
-    $(saveBtn).append(saveIcon);
-}
-
+  }
+  
 $('.col-10').on('click', 'p', function () {
 
     var text = $(this)
